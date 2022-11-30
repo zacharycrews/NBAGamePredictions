@@ -24,7 +24,7 @@ def getGameDates():
     # This list contains a dictionary with start/end times, teams, etc
 
 
-    f = open("game_results.csv", "r")
+    f = open("training.csv", "r")
     next(f)
     for x in f:
         dic = {}
@@ -60,10 +60,29 @@ def getGameDates():
         # Combine start/end dates with time to pass into twitter scraper
         start_date_time = start_date + '-' +  time
         end_date_time = end_date + '-' + time
+
+
+
+        date_switch = {
+            "2021-11-1-": "2021-10-31-",
+            "2021-12-1-": "2021-11-30-",
+            "2022-1-1-": "2021-12-31-",
+            "2022-2-1-": "2022-1-31-",
+            "2022-3-1-": "2022-2-28-",
+            "2022-4-1-": "2022-3-31-",
+            "2022-5-1-": "2022-4-30-",
+            "2022-6-1-": "2022-5-31-"
+        }
+
+        for j in date_switch:
+            if j in end_date_time:
+                start_date_time = end_date_time.replace(j, date_switch[j])
+                dic['start_date_time'] = start_date_time
+        # if date_switch in end_date_time:
+
+
         dic['start_date_time'] = start_date_time
         dic['end_date_time'] = end_date_time
-
-
 
         # Vistor team and points scored
         dic['visitor'] = llist[2]
@@ -91,6 +110,7 @@ def getGameDates():
     # print(labels[0])
 
 def getTweets(games):
+    print(games)
     for q in range(10): #len(game_start_dates)
 
         # Creating list to append tweet data to
@@ -156,4 +176,5 @@ def getTweets(games):
         # print(tweets_list_home)
 
 getGameDates()
-getTweets(games)
+print(len(games))
+# getTweets(games)
