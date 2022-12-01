@@ -1,10 +1,13 @@
 from ReadCSV import games
+import textblob
 
 game_features = [[0,0,0,0,0,0,0,0,0] for i in range(len(games))]
 
 for i, game in enumerate(games):
     home_team = game['home']
     away_team = game['visitor']
+
+    # Calculate ppg and papg
     home_pts = 0
     home_pa = 0
     home_games = 0
@@ -33,4 +36,5 @@ for i, game in enumerate(games):
     game_features[i][5] = away_pts / max(away_games,1)
     game_features[i][6] = away_pa / max(away_games,1)
 
-print(game_features[100:105])
+    # Get sentiment score
+    
