@@ -1,14 +1,20 @@
 import re
 import nltk
 
-file = open('data.txt', 'r', encoding="utf-8")
-tweets = file.read()
-tweets = re.sub("\n", " ", tweets)
-file.close()
+
+val = input("Enter 'home' or 'away': ")
+for i in range(1323):
+    path = 'dataset/'+val+'tweets'+val+i+'.txt'
+    with open(path, 'r', encoding="utf-8") as file:
+        tweets = file.read()
+    with open(path, 'w+', encoding="utf-8") as file:
+        file.write(clean_tweets(tweets))
+
 
 def clean_tweets(tweets):
 
     ### Cleaning Data
+    tweets = re.sub("\n", " ", tweets)
     # Remove mentions
     tweets = re.sub(r'[A-Za-z0-9]*@[A-Za-z]*\.?[A-Za-z]*',' ',tweets)
     # Remove url 
@@ -27,7 +33,5 @@ def clean_tweets(tweets):
     lemmatizer = nltk.stem.WordNetLemmatizer()
     for i in range(len(tokens)):
         tokens[i] = lemmatizer.lemmatize(tokens[i])
-    #print(tweets,'\n')
-    return tokens
 
-print(clean_tweets(tweets))
+    return tokens
