@@ -1,9 +1,15 @@
-from ReadCSV import games
+from ReadCSV import training_games
+from ReadCSV import training_labels
 import textblob
+from sklearn.naive_bayes import GaussianNB
+from sklearn.svm import SVC
+from sklearn.linear_model import LogisticRegression
 
-game_features = [[0,0,0,0,0,0,0,0,0] for i in range(len(games))]
 
-for i, game in enumerate(games):
+
+game_features = [[0,0,0,0,0,0,0,0,0] for i in range(len(training_games))]
+
+for i, game in enumerate(training_games):
     home_team = game['home']
     away_team = game['visitor']
 
@@ -14,7 +20,7 @@ for i, game in enumerate(games):
     away_pts = 0
     away_pa = 0
     away_games = 0
-    for stats in games[:i]:
+    for stats in training_games[:i]:
         if stats['home'] == home_team:
             home_pts += int(stats['home_PTS'])
             home_pa += int(stats['visitor_PTS'])
@@ -38,3 +44,15 @@ for i, game in enumerate(games):
 
     # Get sentiment score
     
+X_train = game_features
+Y_train = training_labels
+
+svm = SVC().fit(X_train, Y_train)
+nb = GaussianNB().fit(X_train, Y_train)
+log_reg = LogisticRegression().fit(X_train, Y_train)
+
+
+
+
+
+
