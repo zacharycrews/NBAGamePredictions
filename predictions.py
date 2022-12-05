@@ -73,7 +73,55 @@ for i, game in enumerate(training_games):
             break
         
     # Get sentiment score
+    # Positive and Negative Tweets Count
+    home_pos_tweets, home_neg_tweets = 0, 0
+    away_pos_tweets, away_neg_tweets = 0, 0
 
+    # Read in json dataset
+    home_path = "dataset/home_train/home_train"+str(i)+".json"
+    home_file = open(home_path)
+    home_tweets = json.load(home_file)
+    home_file.close()
+
+    away_path = "dataset/away_train/away_train"+str(i)+".json"
+    away_file = open(away_path)
+    away_tweets = json.load(away_file)
+    away_file.close()
+
+    # Sentiment with TextBlob
+    for k in home_tweets.keys():
+        analysis = TextBlob(home_tweets[k])
+        analysis = analysis[0:-1]
+        polar = analysis.sentiment.polarity
+    
+        # Count Positive/Negative Tweets
+        if (polar > 0.05):
+            home_pos_tweets += 1
+        elif (polar < -0.05):
+            home_neg_tweets += 1
+
+    home_percent_pos = home_pos_tweets / len(home_tweets.keys())
+    home_percent_neg = home_neg_tweets / len(home_tweets.keys())
+    home_ratio = home_percent_pos/home_percent_neg
+
+    game_features[i][0] = home_ratio
+
+    for k in away_tweets.keys():
+        analysis = TextBlob(away_tweets[k])
+        analysis = analysis[0:-1]
+        polar = analysis.sentiment.polarity
+    
+        # Count Positive/Negative Tweets
+        if (polar > 0.05):
+            away_pos_tweets += 1
+        elif (polar < -0.05):
+            away_neg_tweets += 1
+
+    away_percent_pos = away_pos_tweets / len(away_tweets.keys())
+    away_percent_neg = away_neg_tweets / len(away_tweets.keys())
+    away_ratio = away_percent_pos/away_percent_neg
+
+    game_features[i][4] = away_ratio
 
 for i in range(100):
     print(str(i) + ":\t" + str(game_features[i]))
@@ -83,9 +131,3 @@ Y_train = training_labels
 svm = SVC().fit(X_train, Y_train)
 nb = GaussianNB().fit(X_train, Y_train)
 log_reg = LogisticRegression().fit(X_train, Y_train)
-
-
-
-
-
-
