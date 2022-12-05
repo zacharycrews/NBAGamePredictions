@@ -68,7 +68,7 @@ for x in f:
     training_games.append(dic)
 
     # Who won?
-    if dic['visitor_PTS'] >= dic['home_PTS']:
+    if int(dic['visitor_PTS']) >= int(dic['home_PTS']):
         training_labels.append(0)
     else:
         training_labels.append(1)    
@@ -127,7 +127,7 @@ for x in f:
     testing_games.append(dic)
 
     # Who won?
-    if dic['visitor_PTS'] >= dic['home_PTS']:
+    if int(dic['visitor_PTS']) >= int(dic['home_PTS']):
         testing_labels.append(0)
     else:
         testing_labels.append(1)    
