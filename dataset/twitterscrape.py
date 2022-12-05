@@ -24,7 +24,7 @@ def getGameDates():
     # This list contains a dictionary with start/end times, teams, etc
 
 
-    f = open("training.csv", "r")
+    f = open("game_results.csv", "r")
     next(f)
     for x in f:
         dic = {}
@@ -71,7 +71,8 @@ def getGameDates():
             "2022-3-1-": "2022-2-28-",
             "2022-4-1-": "2022-3-31-",
             "2022-5-1-": "2022-4-30-",
-            "2022-6-1-": "2022-5-31-"
+            "2022-6-1-": "2022-5-31-",
+            "2022-11-1-": "2022-10-31-"
         }
 
         for j in date_switch:
@@ -103,20 +104,14 @@ def getGameDates():
     f.close()
 
 
-    #Example of game list and label list
-    # for j in range(len(games)):
-    #     game_start_dates.append(games[j]["start_date_time"])
-    #     game_end_dates.append(games[j]["end_date_time"])
-    # print(labels[0])
 
 def getTweets(games):
-    print(games)
-    for q in range(10): #len(game_start_dates)
+
+    for q in range(len(games)):
 
         # Creating list to append tweet data to
         tweets_list_home = []
         tweets_list_away = []
-
         #process each game data
         syear, smonth, sday, shour, smin = games[q]["start_date_time"].split('-')
         syear = int(syear)
@@ -133,48 +128,44 @@ def getTweets(games):
         home_team = games[q]["home"]
         away_team = games[q]["visitor"]
 
+        # edge case handler for games played at 12 oclock
+        if shour == 24:
+            shour = 12
+        if ehour == 24:
+            ehour = 12
+
         # Get Starting time of game (year,month,date,hour,min) -- important: (24 hour time)
         t_begin_search = int(datetime.datetime(syear,smonth,sday,shour,smin).timestamp())
         # Get 24 hours BEFORE the start time of game (year,month,date,hour,min) -- important: (24 hour time)
         t_end_search = int(datetime.datetime(eyear,emonth,eday,ehour,emin).timestamp())
 
-        # EDGE CASES : if a game is played on the first of the month, we need to make sure that we get the
-        # previous date correct. As in, a game played on December 1st needs to begin searching for tweets
-        # starting at November 30th
-
-        # should be able to iterate over the entire dataframe when read in, so a nested foreloop outside the one
-        # below, using the integer value in the df, then feeding the datetime in the first column to a function
-        # created out of the code above to convert to epoch, then someting like df[index]['Visitor/Neutral'] in one
-        # loop to get the tweets for the away team, then the same process for df[index]['Home/Neutral'] for another loop
-        # then we can store this information... in a new dataframe? this would be called something like "testweets.csv"?
-        # where we include what information in the dataframe... just the tweets, username, verified status? Then
-        # Dex and Zach can take the tweets and the informaiton we scraped to use for the model and predict sentiment?
-        # But from here, that leaves them only the sentiment as an inclusion in their training data... is there something
-        # more we need to give them? Surely home vs. away will be included as a parameter in their data, but what else
-        # could we give them to include in their dataset? not sure...
-
+        list_home = []
+        list_away = []
         # Using TwitterSearchScraper to scrape data and append tweets to list
-        outfile_home = open('hometweets/home{}.txt'.format(q), 'w')
-        outfile_away = open('awaytweets/away{}.txt'.format(q), 'w')
         # for loop for scraping all tweets for the HOME team
         # note, for both cases, the first parameter in format is going to be the name of the team we are scraping, likely to come from the df we import from csv
         for i,tweet in enumerate(sntwitter.TwitterSearchScraper('{} since_time:{} until_time:{} lang:en'.format(home_team, t_begin_search, t_end_search)).get_items()):
-            # tweets_list_home.append([tweet.date, tweet.content, tweet.user.username, tweet.user.verified])
-            # tweets_list_home.append(str(tweet.content))
-            outfile_home.write(str(tweet.content).strip())
-        print('completed')
+            list_home.append(str(tweet.content).strip())
         for j,tweet2 in enumerate(sntwitter.TwitterSearchScraper('{} since_time:{} until_time:{} lang:en'.format(away_team, t_begin_search, t_end_search)).get_items()):
-            # tweets_list_away.append([tweet2.date, tweet2.content, tweet2.user.username, tweet2.user.verified])
-            outfile_away.write(str(tweet2.content).strip())
+            list_away.append(str(tweet2.content).strip())
 
-        # Creating a dataframe from the tweets list above
-        # tweets_df_home = pd.DataFrame(tweets_list_home, columns=['Datetime', 'Tweet', 'Username', 'Verified'])
-        # tweets_df_away = pd.DataFrame(tweets_list_away, columns=['Datetime', 'Tweet', 'Username', 'Verified'])
-        # print(tweets_df_home.tail())
-        # print()
-        # print(tweets_df_away.tail())
-        # print(tweets_list_home)
+        home_tweets = {}
+        away_tweets = {}
+
+        for p in range(len(list_home)):
+            home_tweets[p] = list_home[p]
+
+        for m in range(len(list_away)):
+            away_tweets[m] = list_away[m]
+
+        js_home = json.dumps(home_tweets, indent=4)
+        js_away = json.dumps(away_tweets, indent=4)
+
+        with open("home_test/home_test{}.json".format(q), 'w') as outfile:
+            json.dump(home_tweets, outfile, indent=4)
+        with open("away_test/away_test{}.json".format(q), 'w') as outfile2:
+            json.dump(away_tweets, outfile2, indent=4)
+
 
 getGameDates()
-print(len(games))
-# getTweets(games)
+getTweets(games)
