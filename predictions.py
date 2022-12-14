@@ -4,31 +4,16 @@ from sklearn import metrics
 from sklearn.naive_bayes import GaussianNB
 from sklearn.svm import LinearSVC
 from sklearn.linear_model import LogisticRegression
+from sklearn.neural_network import MLPClassifier
 import json
-import tensorflow as tf
 
 month_lengths = {10:31,11:30,12:31,1:31,2:28,3:31,4:30,5:31,6:30}
-'''
-# For RNN
-def build_model(classes, embedding_dim, rnn_units, batch_size):
-  model = tf.keras.Sequential([
-    tf.keras.layers.Embedding(classes, embedding_dim),
-    tf.keras.layers.GRU(rnn_units,
-                        return_sequences=True,
-                        stateful=True,
-                        recurrent_initializer='glorot_uniform'),
-    tf.keras.layers.Dense(classes)
-  ])
-  return model
 
-def loss(labels, logits):
-  return tf.keras.losses.sparse_categorical_crossentropy(labels, logits, from_logits=True)
-'''
 
-### TRAIN MODEL ###
+### TRAINING FEATURES ###
 
 game_features = [[0,0,0,0,0,0,0,0] for i in range(len(training_games))]
- 
+
 for i, game in enumerate(training_games):
     home_team = game['home']
     away_team = game['visitor']
@@ -141,23 +126,16 @@ for i, game in enumerate(training_games):
 
     game_features[i][4] = away_ratio
 
-#for i in range(100):
-#    print(str(i) + ":\t" + str(game_features[i]))
 
 X_train = game_features
 Y_train = training_labels
 
-svm = LinearSVC(max_iter=10000).fit(X_train, Y_train)
 nb = GaussianNB().fit(X_train, Y_train)
+svm = LinearSVC(max_iter=12000).fit(X_train, Y_train)
 log_reg = LogisticRegression().fit(X_train, Y_train)
+neural = MLPClassifier(batch_size=20,random_state=1,learning_rate='adaptive').fit(X_train, Y_train)
 
-'''
-rnn = build_model(classes=2,embedding_dim=256,rnn_units=1024)
-rnn.compile(optimizer='adam', loss=loss)
-rnn.fit(X_train, Y_train, epochs=10)
-'''
-
-### TEST MODEL ###
+### TESTING FEATURES ###
 
 test_features = [[0,0,0,0,0,0,0,0] for i in range(len(testing_games))]
 
@@ -273,22 +251,20 @@ for i, game in enumerate(testing_games):
 
     test_features[i][4] = away_ratio
 
-expected = testing_labels
-
-print("SVM")
-predicted = svm.predict(test_features)
-print(metrics.classification_report(expected, predicted))
 
 print("Naive-Bayes")
 predicted = nb.predict(test_features)
-print(metrics.classification_report(expected, predicted))
+print(metrics.classification_report(testing_labels, predicted))
 
-print("Log reg")
+print("SVM")
+predicted = svm.predict(test_features)
+print(metrics.classification_report(testing_labels, predicted))
+
+print("Logistic regression")
 predicted = log_reg.predict(test_features)
-print(metrics.classification_report(expected, predicted))
+print(metrics.classification_report(testing_labels, predicted))
 
-'''
-print("RNN")
-predicted = rnn(test_features)
-print(metrics.classification_report(expected, predicted))
-'''
+print("Feed-forward NN")
+predicted = neural.predict(test_features)
+print(metrics.classification_report(testing_labels, predicted))
+
