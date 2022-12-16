@@ -12,7 +12,7 @@ month_lengths = {10:31,11:30,12:31,1:31,2:28,3:31,4:30,5:31,6:30}
 
 ### TRAINING FEATURES ###
 
-game_features = [[0,0,0,0,0,0,0,0] for i in range(len(training_games))]
+game_features = [[0,0,0,0,0,0,0,0,0,0] for i in range(len(training_games))]
 
 for i, game in enumerate(training_games):
     home_team = game['home']
@@ -43,10 +43,10 @@ for i, game in enumerate(training_games):
             away_pa += int(stats['home_PTS'])
             away_games += 1
 
-    game_features[i][1] = home_pts / max(home_games,1)
-    game_features[i][2] = home_pa / max(home_games,1)
-    game_features[i][5] = away_pts / max(away_games,1)
-    game_features[i][6] = away_pa / max(away_games,1)
+    game_features[i][2] = home_pts / max(home_games,1)
+    game_features[i][3] = home_pa / max(home_games,1)
+    game_features[i][7] = away_pts / max(away_games,1)
+    game_features[i][8] = away_pa / max(away_games,1)
 
     # Determine if it is team's second game in a row
     start_date = game['start_date_time'].split("-")
@@ -69,9 +69,9 @@ for i, game in enumerate(training_games):
         prev_game = training_games[j]
         if previous_date in prev_game['start_date_time'] or current_date in prev_game['start_date_time']:
             if (prev_game['home'] == home_team or prev_game['visitor'] == home_team) and previous_date in prev_game['start_date_time']:
-                game_features[i][3] = 1
+                game_features[i][4] = 1
             if (prev_game['home'] == away_team or prev_game['visitor'] == away_team) and previous_date in prev_game['start_date_time']:
-                game_features[i][7] = 1
+                game_features[i][9] = 1
         else:
             break
         
@@ -96,7 +96,7 @@ for i, game in enumerate(training_games):
         analysis = TextBlob(home_tweets[k])
         analysis = analysis[0:-1]
         polar = analysis.sentiment.polarity
-    
+
         # Count Positive/Negative Tweets
         if (polar > 0.05):
             home_pos_tweets += 1
@@ -105,15 +105,15 @@ for i, game in enumerate(training_games):
 
     home_percent_pos = home_pos_tweets / len(home_tweets.keys())
     home_percent_neg = home_neg_tweets / len(home_tweets.keys())
-    home_ratio = home_percent_pos/max(home_percent_neg,0.1)
 
-    game_features[i][0] = home_ratio
+    game_features[i][0] = home_percent_pos
+    game_features[i][1] = home_percent_neg
 
     for k in away_tweets.keys():
         analysis = TextBlob(away_tweets[k])
         analysis = analysis[0:-1]
         polar = analysis.sentiment.polarity
-    
+
         # Count Positive/Negative Tweets
         if (polar > 0.05):
             away_pos_tweets += 1
@@ -122,9 +122,9 @@ for i, game in enumerate(training_games):
 
     away_percent_pos = away_pos_tweets / len(away_tweets.keys())
     away_percent_neg = away_neg_tweets / len(away_tweets.keys())
-    away_ratio = away_percent_pos/max(away_percent_neg,0.1)
 
-    game_features[i][4] = away_ratio
+    game_features[i][5] = away_percent_pos
+    game_features[i][6] = away_percent_neg 
 
 
 X_train = game_features
@@ -137,7 +137,7 @@ neural = MLPClassifier(batch_size=20,random_state=1,learning_rate='adaptive').fi
 
 ### TESTING FEATURES ###
 
-test_features = [[0,0,0,0,0,0,0,0] for i in range(len(testing_games))]
+test_features = [[0,0,0,0,0,0,0,0,0,0] for i in range(len(testing_games))]
 
 for i, game in enumerate(testing_games):
     home_team = game['home']
@@ -168,10 +168,10 @@ for i, game in enumerate(testing_games):
             away_pa += int(stats['home_PTS'])
             away_games += 1
 
-    test_features[i][1] = home_pts / max(home_games,1)
-    test_features[i][2] = home_pa / max(home_games,1)
-    test_features[i][5] = away_pts / max(away_games,1)
-    test_features[i][6] = away_pa / max(away_games,1)
+    test_features[i][2] = home_pts / max(home_games,1)
+    test_features[i][3] = home_pa / max(home_games,1)
+    test_features[i][7] = away_pts / max(away_games,1)
+    test_features[i][8] = away_pa / max(away_games,1)
 
     # Determine if it is team's second game in a row
     start_date = game['start_date_time'].split("-")
@@ -194,9 +194,9 @@ for i, game in enumerate(testing_games):
         prev_game = testing_games[j]
         if previous_date in prev_game['start_date_time'] or current_date in prev_game['start_date_time']:
             if (prev_game['home'] == home_team or prev_game['visitor'] == home_team) and previous_date in prev_game['start_date_time']:
-                game_features[i][3] = 1
+                game_features[i][4] = 1
             if (prev_game['home'] == away_team or prev_game['visitor'] == away_team) and previous_date in prev_game['start_date_time']:
-                game_features[i][7] = 1
+                game_features[i][9] = 1
         else:
             break
         
@@ -221,7 +221,7 @@ for i, game in enumerate(testing_games):
         analysis = TextBlob(home_tweets[k])
         analysis = analysis[0:-1]
         polar = analysis.sentiment.polarity
-    
+
         # Count Positive/Negative Tweets
         if (polar > 0.05):
             home_pos_tweets += 1
@@ -230,15 +230,15 @@ for i, game in enumerate(testing_games):
 
     home_percent_pos = home_pos_tweets / len(home_tweets.keys())
     home_percent_neg = home_neg_tweets / len(home_tweets.keys())
-    home_ratio = home_percent_pos/max(home_percent_neg,0.1)
 
-    test_features[i][0] = home_ratio
+    test_features[i][0] = home_percent_pos
+    test_features[i][1] = home_percent_neg
 
     for k in away_tweets.keys():
         analysis = TextBlob(away_tweets[k])
         analysis = analysis[0:-1]
         polar = analysis.sentiment.polarity
-    
+
         # Count Positive/Negative Tweets
         if (polar > 0.05):
             away_pos_tweets += 1
@@ -247,24 +247,24 @@ for i, game in enumerate(testing_games):
 
     away_percent_pos = away_pos_tweets / len(away_tweets.keys())
     away_percent_neg = away_neg_tweets / len(away_tweets.keys())
-    away_ratio = away_percent_pos/max(away_percent_neg,0.1)
 
-    test_features[i][4] = away_ratio
+    test_features[i][5] = away_percent_pos
+    test_features[i][6] = away_percent_neg 
 
 
 print("Naive-Bayes")
-predicted = nb.predict(test_features)
-print(metrics.classification_report(testing_labels, predicted))
+nb_predicted = nb.predict(test_features)
+print(metrics.classification_report(testing_labels, nb_predicted))
 
 print("SVM")
-predicted = svm.predict(test_features)
-print(metrics.classification_report(testing_labels, predicted))
+svm_predicted = svm.predict(test_features)
+print(metrics.classification_report(testing_labels, svm_predicted))
 
 print("Logistic regression")
-predicted = log_reg.predict(test_features)
-print(metrics.classification_report(testing_labels, predicted))
+log_reg_predicted = log_reg.predict(test_features)
+print(metrics.classification_report(testing_labels, log_reg_predicted))
 
 print("Feed-forward NN")
-predicted = neural.predict(test_features)
-print(metrics.classification_report(testing_labels, predicted))
+neural_predicted = neural.predict(test_features)
+print(metrics.classification_report(testing_labels, neural_predicted))
 
