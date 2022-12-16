@@ -117,7 +117,6 @@ Y_train = training_labels
 nb = GaussianNB().fit(X_train, Y_train)
 svm = LinearSVC(max_iter=12000).fit(X_train, Y_train)
 log_reg = LogisticRegression().fit(X_train, Y_train)
-neural = MLPClassifier(batch_size=20,random_state=1,learning_rate='adaptive').fit(X_train, Y_train)
 
 
 #####                                                                               TESTING SECTION
@@ -232,17 +231,13 @@ iteration()
 
 ### PRINTING RESULT OF SENTIMENT FEATURES BY ITSELF
 print("Naive-Bayes")
-predicted = nb.predict(test_features)
+predicted = nb.predict(test_sentiment_features)
 print(metrics.classification_report(testing_labels, predicted))
 
 print("SVM")
-predicted = svm.predict(test_features)
+predicted = svm.predict(test_sentiment_features)
 print(metrics.classification_report(testing_labels, predicted))
 
 print("Logistic regression")
-predicted = log_reg.predict(test_features)
-print(metrics.classification_report(testing_labels, predicted))
-
-print("Feed-forward NN")
-predicted = neural.predict(test_features)
+predicted = log_reg.predict(test_sentiment_features)
 print(metrics.classification_report(testing_labels, predicted))
